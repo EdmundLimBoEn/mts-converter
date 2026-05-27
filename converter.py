@@ -10,8 +10,21 @@ import json
 from typing import List, Optional
 from pathlib import Path
 
-FFMPEG = "ffmpeg"
-FFPROBE = "ffprobe"
+def _find_bin(name: str) -> str:
+    """Find ffmpeg/ffprobe in Homebrew or standard locations, regardless of shell PATH."""
+    candidates = [
+        f"/opt/homebrew/bin/{name}",   # Apple Silicon Homebrew
+        f"/usr/local/bin/{name}",       # Intel Homebrew
+        f"/opt/local/bin/{name}",       # MacPorts
+        f"/usr/bin/{name}",
+    ]
+    for p in candidates:
+        if os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    return name  # fall back and let the OS try
+
+FFMPEG  = _find_bin("ffmpeg")
+FFPROBE = _find_bin("ffprobe")
 
 PRESETS = {
     "Stream Copy (no re-encode)": ("copy",      0),
